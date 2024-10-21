@@ -34,12 +34,7 @@ impl Default for MountOperation {
     }
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::IsA<super::MountOperation>> Sealed for T {}
-}
-
-pub trait MountOperationExt: IsA<MountOperation> + sealed::Sealed + 'static {
+pub trait MountOperationExt: IsA<MountOperation> + 'static {
     #[doc(alias = "g_mount_operation_get_anonymous")]
     #[doc(alias = "get_anonymous")]
     #[doc(alias = "anonymous")]
@@ -270,9 +265,9 @@ pub trait MountOperationExt: IsA<MountOperation> + sealed::Sealed + 'static {
             F: Fn(&P, &str, &str, &str, AskPasswordFlags) + 'static,
         >(
             this: *mut ffi::GMountOperation,
-            message: *mut libc::c_char,
-            default_user: *mut libc::c_char,
-            default_domain: *mut libc::c_char,
+            message: *mut std::ffi::c_char,
+            default_user: *mut std::ffi::c_char,
+            default_domain: *mut std::ffi::c_char,
             flags: ffi::GAskPasswordFlags,
             f: glib::ffi::gpointer,
         ) {
@@ -348,7 +343,7 @@ pub trait MountOperationExt: IsA<MountOperation> + sealed::Sealed + 'static {
             F: Fn(&P, &str, i64, i64) + 'static,
         >(
             this: *mut ffi::GMountOperation,
-            message: *mut libc::c_char,
+            message: *mut std::ffi::c_char,
             time_left: i64,
             bytes_left: i64,
             f: glib::ffi::gpointer,

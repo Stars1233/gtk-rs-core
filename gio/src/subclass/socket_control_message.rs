@@ -4,7 +4,9 @@ use glib::{prelude::*, subclass::prelude::*, translate::*};
 
 use crate::{ffi, SocketControlMessage};
 
-pub trait SocketControlMessageImpl: ObjectImpl + SocketControlMessageImplExt {
+pub trait SocketControlMessageImpl:
+    ObjectImpl + ObjectSubclass<Type: IsA<SocketControlMessage>>
+{
     fn level(&self) -> i32 {
         self.parent_level()
     }
@@ -26,12 +28,7 @@ pub trait SocketControlMessageImpl: ObjectImpl + SocketControlMessageImplExt {
     }
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::SocketControlMessageImplExt> Sealed for T {}
-}
-
-pub trait SocketControlMessageImplExt: sealed::Sealed + ObjectSubclass {
+pub trait SocketControlMessageImplExt: SocketControlMessageImpl {
     fn parent_level(&self) -> i32 {
         unsafe {
             let data = Self::type_data();

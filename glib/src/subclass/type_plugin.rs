@@ -3,10 +3,10 @@
 use crate::enums::{EnumValues, FlagsValues};
 use crate::{
     ffi, gobject_ffi, prelude::*, subclass::prelude::*, translate::*, Interface, InterfaceInfo,
-    Type, TypeFlags, TypeInfo, TypePlugin, TypeValueTable,
+    Object, Type, TypeFlags, TypeInfo, TypePlugin, TypeValueTable,
 };
 
-pub trait TypePluginImpl: ObjectImpl + TypePluginImplExt {
+pub trait TypePluginImpl: ObjectImpl + ObjectSubclass<Type: IsA<Object> + IsA<TypePlugin>> {
     fn use_plugin(&self) {
         self.parent_use_plugin();
     }
@@ -24,7 +24,7 @@ pub trait TypePluginImpl: ObjectImpl + TypePluginImplExt {
     }
 }
 
-pub trait TypePluginImplExt: ObjectSubclass {
+pub trait TypePluginImplExt: TypePluginImpl {
     fn parent_use_plugin(&self);
     fn parent_unuse_plugin(&self);
     fn parent_complete_type_info(&self, type_: Type) -> (TypeInfo, TypeValueTable);
@@ -175,7 +175,9 @@ unsafe extern "C" fn complete_interface_info<T: TypePluginImpl>(
     *info = info_;
 }
 
-pub trait TypePluginRegisterImpl: ObjectImpl + TypePluginImpl {
+pub trait TypePluginRegisterImpl:
+    TypePluginImpl + ObjectSubclass<Type: IsA<Object> + IsA<TypePlugin>>
+{
     fn add_dynamic_interface(
         &self,
         _instance_type: Type,

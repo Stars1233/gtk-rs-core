@@ -6,7 +6,7 @@ use glib::{prelude::*, subclass::prelude::*, translate::*};
 
 use crate::{ffi, ListModel};
 
-pub trait ListModelImpl: ObjectImpl {
+pub trait ListModelImpl: ObjectImpl + ObjectSubclass<Type: IsA<ListModel>> {
     #[doc(alias = "get_item_type")]
     fn item_type(&self) -> glib::Type;
     #[doc(alias = "get_n_items")]
@@ -15,12 +15,7 @@ pub trait ListModelImpl: ObjectImpl {
     fn item(&self, position: u32) -> Option<glib::Object>;
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::ListModelImplExt> Sealed for T {}
-}
-
-pub trait ListModelImplExt: sealed::Sealed + ObjectSubclass {
+pub trait ListModelImplExt: ListModelImpl {
     fn parent_item_type(&self) -> glib::Type {
         unsafe {
             let type_data = Self::type_data();
@@ -68,10 +63,7 @@ pub trait ListModelImplExt: sealed::Sealed + ObjectSubclass {
 
 impl<T: ListModelImpl> ListModelImplExt for T {}
 
-unsafe impl<T: ListModelImpl> IsImplementable<T> for ListModel
-where
-    <T as ObjectSubclass>::Type: IsA<glib::Object>,
-{
+unsafe impl<T: ListModelImpl> IsImplementable<T> for ListModel {
     fn interface_init(iface: &mut glib::Interface<Self>) {
         let iface = iface.as_mut();
 
@@ -83,10 +75,7 @@ where
 
 unsafe extern "C" fn list_model_get_item_type<T: ListModelImpl>(
     list_model: *mut ffi::GListModel,
-) -> glib::ffi::GType
-where
-    <T as ObjectSubclass>::Type: IsA<glib::Object>,
-{
+) -> glib::ffi::GType {
     let instance = &*(list_model as *mut T::Instance);
     let imp = instance.imp();
 
@@ -115,10 +104,7 @@ where
 
 unsafe extern "C" fn list_model_get_n_items<T: ListModelImpl>(
     list_model: *mut ffi::GListModel,
-) -> u32
-where
-    <T as ObjectSubclass>::Type: IsA<glib::Object>,
-{
+) -> u32 {
     let instance = &*(list_model as *mut T::Instance);
     let imp = instance.imp();
 
@@ -128,10 +114,7 @@ where
 unsafe extern "C" fn list_model_get_item<T: ListModelImpl>(
     list_model: *mut ffi::GListModel,
     position: u32,
-) -> *mut glib::gobject_ffi::GObject
-where
-    <T as ObjectSubclass>::Type: IsA<glib::Object>,
-{
+) -> *mut glib::gobject_ffi::GObject {
     let instance = &*(list_model as *mut T::Instance);
     let imp = instance.imp();
 

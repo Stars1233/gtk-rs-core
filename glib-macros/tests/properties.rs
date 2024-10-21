@@ -93,6 +93,8 @@ mod foo {
             string_vec: RefCell<Vec<String>>,
             #[property(get, set, builder(glib::VariantTy::DOUBLE))]
             variant: RefCell<Option<glib::Variant>>,
+            #[property(get, set, builder(&<Option<i32>>::static_variant_type()))]
+            variant2: RefCell<Option<glib::Variant>>,
             #[property(get = |_| 42.0, set)]
             infer_inline_type: RefCell<f64>,
             // The following property doesn't store any data. The value of the property is calculated
@@ -181,6 +183,19 @@ mod foo {
                     .set(value.map(|v| format!("custom set: {}", v)))
                     .expect("Setter to be only called once");
             }
+        }
+
+        /// Checks that `Properties` does not pollute the scope with
+        /// trait imports, as it did in older versions.
+        #[test]
+        fn no_import_leaks() {
+            // `vec.get` can match these methods (in order of precedence):
+            // (1) `<Vec<String> as PropertyGet>::get`
+            // (2) `<[String]>::get` through deref of `Vec<String>`
+            // Had the macro introduced `PropertyGet` into the scope, it would
+            // resolve to (1), which we do not want.
+            let vec: Vec<String> = vec![String::new(); 2];
+            assert_eq!(vec.get(1), Some(&String::new()));
         }
     }
 

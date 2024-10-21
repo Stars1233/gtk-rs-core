@@ -23,12 +23,7 @@ impl ListModel {
     pub const NONE: Option<&'static ListModel> = None;
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::IsA<super::ListModel>> Sealed for T {}
-}
-
-pub trait ListModelExt: IsA<ListModel> + sealed::Sealed + 'static {
+pub trait ListModelExt: IsA<ListModel> + 'static {
     #[doc(alias = "g_list_model_get_item_type")]
     #[doc(alias = "get_item_type")]
     fn item_type(&self) -> glib::types::Type {
@@ -78,9 +73,9 @@ pub trait ListModelExt: IsA<ListModel> + sealed::Sealed + 'static {
             F: Fn(&P, u32, u32, u32) + 'static,
         >(
             this: *mut ffi::GListModel,
-            position: libc::c_uint,
-            removed: libc::c_uint,
-            added: libc::c_uint,
+            position: std::ffi::c_uint,
+            removed: std::ffi::c_uint,
+            added: std::ffi::c_uint,
             f: glib::ffi::gpointer,
         ) {
             let f: &F = &*(f as *const F);

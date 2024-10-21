@@ -5,8 +5,7 @@ use glib::subclass::prelude::*;
 #[allow(dead_code)]
 pub mod ffi {
     /// The instance pointer is used for references to the object.
-    #[repr(C)]
-    pub struct Instance(std::ffi::c_void);
+    pub type Instance = <super::Pet as super::ObjectSubclass>::Instance;
 
     /// Custom class struct for the [`Pet`](super::Pet) class.
     ///
@@ -126,7 +125,7 @@ pub trait PetExt: IsA<Pet> {
 impl<T: IsA<Pet>> PetExt for T {}
 
 /// The `PetImpl` trait contains overridable virtual function definitions for [`Pet`] objects.
-pub trait PetImpl: ObjectImpl {
+pub trait PetImpl: ObjectImpl + ObjectSubclass<Type: IsA<Pet>> {
     /// Default implementation of a virtual method.
     ///
     /// This always calls into the implementation of the parent class so that if

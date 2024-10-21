@@ -98,12 +98,7 @@ impl Settings {
     }
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::IsA<super::Settings>> Sealed for T {}
-}
-
-pub trait SettingsExt: IsA<Settings> + sealed::Sealed + 'static {
+pub trait SettingsExt: IsA<Settings> + 'static {
     #[doc(alias = "g_settings_apply")]
     fn apply(&self) {
         unsafe {
@@ -517,7 +512,7 @@ pub trait SettingsExt: IsA<Settings> + sealed::Sealed + 'static {
     ) -> SignalHandlerId {
         unsafe extern "C" fn changed_trampoline<P: IsA<Settings>, F: Fn(&P, &str) + 'static>(
             this: *mut ffi::GSettings,
-            key: *mut libc::c_char,
+            key: *mut std::ffi::c_char,
             f: glib::ffi::gpointer,
         ) {
             let f: &F = &*(f as *const F);
@@ -553,7 +548,7 @@ pub trait SettingsExt: IsA<Settings> + sealed::Sealed + 'static {
             F: Fn(&P, u32) -> glib::Propagation + 'static,
         >(
             this: *mut ffi::GSettings,
-            key: libc::c_uint,
+            key: std::ffi::c_uint,
             f: glib::ffi::gpointer,
         ) -> glib::ffi::gboolean {
             let f: &F = &*(f as *const F);
@@ -583,7 +578,7 @@ pub trait SettingsExt: IsA<Settings> + sealed::Sealed + 'static {
             F: Fn(&P, &str) + 'static,
         >(
             this: *mut ffi::GSettings,
-            key: *mut libc::c_char,
+            key: *mut std::ffi::c_char,
             f: glib::ffi::gpointer,
         ) {
             let f: &F = &*(f as *const F);

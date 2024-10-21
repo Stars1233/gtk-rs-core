@@ -1,8 +1,8 @@
 // Take a look at the license at the top of the repository in the LICENSE file.
 
-use crate::{ffi, gobject_ffi, prelude::*, subclass::prelude::*, translate::*, TypeModule};
+use crate::{ffi, gobject_ffi, prelude::*, subclass::prelude::*, translate::*, Object, TypeModule};
 
-pub trait TypeModuleImpl: ObjectImpl + TypeModuleImplExt {
+pub trait TypeModuleImpl: ObjectImpl + ObjectSubclass<Type: IsA<Object> + IsA<TypeModule>> {
     // rustdoc-stripper-ignore-next
     /// Loads the module, registers one or more object subclasses using
     /// [`register_dynamic_type`] and registers one or more object interfaces
@@ -21,7 +21,7 @@ pub trait TypeModuleImpl: ObjectImpl + TypeModuleImplExt {
     fn unload(&self);
 }
 
-pub trait TypeModuleImplExt: ObjectSubclass {
+pub trait TypeModuleImplExt: TypeModuleImpl {
     fn parent_load(&self) -> bool;
     fn parent_unload(&self);
 }

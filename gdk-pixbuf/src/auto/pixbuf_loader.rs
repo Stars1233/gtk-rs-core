@@ -63,12 +63,7 @@ impl Default for PixbufLoader {
     }
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::IsA<super::PixbufLoader>> Sealed for T {}
-}
-
-pub trait PixbufLoaderExt: IsA<PixbufLoader> + sealed::Sealed + 'static {
+pub trait PixbufLoaderExt: IsA<PixbufLoader> + 'static {
     #[doc(alias = "gdk_pixbuf_loader_close")]
     fn close(&self) -> Result<(), glib::Error> {
         unsafe {
@@ -190,10 +185,10 @@ pub trait PixbufLoaderExt: IsA<PixbufLoader> + sealed::Sealed + 'static {
             F: Fn(&P, i32, i32, i32, i32) + 'static,
         >(
             this: *mut ffi::GdkPixbufLoader,
-            x: libc::c_int,
-            y: libc::c_int,
-            width: libc::c_int,
-            height: libc::c_int,
+            x: std::ffi::c_int,
+            y: std::ffi::c_int,
+            width: std::ffi::c_int,
+            height: std::ffi::c_int,
             f: glib::ffi::gpointer,
         ) {
             let f: &F = &*(f as *const F);
@@ -247,8 +242,8 @@ pub trait PixbufLoaderExt: IsA<PixbufLoader> + sealed::Sealed + 'static {
             F: Fn(&P, i32, i32) + 'static,
         >(
             this: *mut ffi::GdkPixbufLoader,
-            width: libc::c_int,
-            height: libc::c_int,
+            width: std::ffi::c_int,
+            height: std::ffi::c_int,
             f: glib::ffi::gpointer,
         ) {
             let f: &F = &*(f as *const F);

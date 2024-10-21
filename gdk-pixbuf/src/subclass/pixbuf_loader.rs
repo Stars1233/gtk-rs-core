@@ -7,7 +7,7 @@ use glib::{prelude::*, subclass::prelude::*, translate::*};
 
 use crate::{ffi, PixbufLoader};
 
-pub trait PixbufLoaderImpl: ObjectImpl {
+pub trait PixbufLoaderImpl: ObjectImpl + ObjectSubclass<Type: IsA<PixbufLoader>> {
     fn size_prepared(&self, width: i32, height: i32) {
         self.parent_size_prepared(width, height)
     }
@@ -25,12 +25,7 @@ pub trait PixbufLoaderImpl: ObjectImpl {
     }
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::PixbufLoaderImplExt> Sealed for T {}
-}
-
-pub trait PixbufLoaderImplExt: sealed::Sealed + ObjectSubclass {
+pub trait PixbufLoaderImplExt: PixbufLoaderImpl {
     fn parent_size_prepared(&self, width: i32, height: i32) {
         unsafe {
             let data = Self::type_data();

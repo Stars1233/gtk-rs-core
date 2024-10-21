@@ -1,10 +1,9 @@
 // Take a look at the license at the top of the repository in the LICENSE file.
 
+mod async_test;
 mod boxed_derive;
 mod clone;
-mod clone_old;
 mod closure;
-mod closure_old;
 mod derived_properties_attribute;
 mod downgrade_derive;
 mod enum_derive;
@@ -19,7 +18,7 @@ mod variant_derive;
 mod utils;
 
 use flags_attribute::AttrInput;
-use proc_macro::{TokenStream, TokenTree};
+use proc_macro::TokenStream;
 use proc_macro2::Span;
 use syn::{parse_macro_input, DeriveInput};
 use utils::{parse_nested_meta_items_from_stream, NestedMetaItem};
@@ -335,18 +334,7 @@ use utils::{parse_nested_meta_items_from_stream, NestedMetaItem};
 /// ```
 #[proc_macro]
 pub fn clone(item: TokenStream) -> TokenStream {
-    // Check if this is an old-style clone macro invocation.
-    // These always start with an '@' punctuation.
-    let Some(first) = item.clone().into_iter().next() else {
-        return syn::Error::new(Span::call_site(), "expected a closure or async block")
-            .to_compile_error()
-            .into();
-    };
-
-    match first {
-        TokenTree::Punct(ref p) if p.to_string() == "@" => clone_old::clone_inner(item),
-        _ => clone::clone_inner(item),
-    }
+    clone::clone_inner(item)
 }
 
 /// Macro for creating a [`Closure`] object. This is a wrapper around [`Closure::new`] that
@@ -362,7 +350,7 @@ pub fn clone(item: TokenStream) -> TokenStream {
 ///
 /// Similarly to [`clone!`](crate::clone!), this macro can be useful in combination with signal
 /// handlers to reduce boilerplate when passing references. Unique to `Closure` objects is the
-/// ability to watch an object using a the `#[watch]` attribute. Only an [`Object`] value can be
+/// ability to watch an object using the `#[watch]` attribute. Only an [`Object`] value can be
 /// passed to `#[watch]`, and only one object can be watched per closure. When an object is watched,
 /// a weak reference to the object is held in the closure. When the object is destroyed, the
 /// closure will become invalidated: all signal handlers connected to the closure will become
@@ -504,18 +492,7 @@ pub fn clone(item: TokenStream) -> TokenStream {
 /// ```
 #[proc_macro]
 pub fn closure(item: TokenStream) -> TokenStream {
-    // Check if this is an old-style closure macro invocation.
-    // These always start with an '@' punctuation.
-    let Some(first) = item.clone().into_iter().next() else {
-        return syn::Error::new(Span::call_site(), "expected a closure")
-            .to_compile_error()
-            .into();
-    };
-
-    match first {
-        TokenTree::Punct(ref p) if p.to_string() == "@" => closure_old::closure_inner(item, "new"),
-        _ => closure::closure_inner(item, "new"),
-    }
+    closure::closure_inner(item, "new")
 }
 
 /// The same as [`closure!`](crate::closure!) but uses [`Closure::new_local`] as a constructor.
@@ -525,24 +502,11 @@ pub fn closure(item: TokenStream) -> TokenStream {
 /// [`Closure::new_local`]: ../glib/closure/struct.Closure.html#method.new_local
 #[proc_macro]
 pub fn closure_local(item: TokenStream) -> TokenStream {
-    // Check if this is an old-style closure macro invocation.
-    // These always start with an '@' punctuation.
-    let Some(first) = item.clone().into_iter().next() else {
-        return syn::Error::new(Span::call_site(), "expected a closure")
-            .to_compile_error()
-            .into();
-    };
-
-    match first {
-        TokenTree::Punct(ref p) if p.to_string() == "@" => {
-            closure_old::closure_inner(item, "new_local")
-        }
-        _ => closure::closure_inner(item, "new_local"),
-    }
+    closure::closure_inner(item, "new_local")
 }
 
-/// Derive macro for register a Rust enum in the GLib type system and derive the
-/// the [`glib::Value`] traits.
+/// Derive macro to register a Rust enum in the GLib type system and derive the
+/// [`glib::Value`] traits.
 ///
 /// # Example
 ///
@@ -577,7 +541,7 @@ pub fn closure_local(item: TokenStream) -> TokenStream {
 /// ```
 ///
 /// As a dynamic type, an enum must be explicitly registered when the system
-/// loads the implementation (see [`TypePlugin`] and [`TypeModule`].
+/// loads the implementation (see [`TypePlugin`] and [`TypeModule`]).
 /// Therefore, whereas an enum can be registered only once as a static type,
 /// it can be registered several times as a dynamic type.
 ///
@@ -675,7 +639,7 @@ pub fn enum_derive(input: TokenStream) -> TokenStream {
 /// Default name is the flag identifier in CamelCase and default nick
 /// is the identifier in kebab-case.
 /// Combined flags should not be registered with the `GType` system
-/// and so needs to be tagged with the `#[flags_value(skip)]` attribute.
+/// and so need to be tagged with the `#[flags_value(skip)]` attribute.
 ///
 /// # Example
 ///
@@ -709,7 +673,7 @@ pub fn enum_derive(input: TokenStream) -> TokenStream {
 /// ```
 ///
 /// As a dynamic type, the flags must be explicitly registered when the system
-/// loads the implementation (see [`TypePlugin`] and [`TypeModule`].
+/// loads the implementation (see [`TypePlugin`] and [`TypeModule`]).
 /// Therefore, whereas the flags can be registered only once as a static type,
 /// they can be registered several times as a dynamic type.
 ///
@@ -926,7 +890,7 @@ pub fn shared_boxed_derive(input: TokenStream) -> TokenStream {
 /// type Interfaces = ();
 /// ```
 ///
-/// If no `new()` or `with_class()` method is provide, the macro adds a `new()`
+/// If no `new()` or `with_class()` method is provided, the macro adds a `new()`
 /// implementation calling `Default::default()`. So the type needs to implement
 /// `Default`, or this should be overridden.
 ///
@@ -949,7 +913,7 @@ pub fn shared_boxed_derive(input: TokenStream) -> TokenStream {
 /// ```
 ///
 /// As a dynamic type, an object subclass must be explicitly registered when
-/// the system loads the implementation (see [`TypePlugin`] and [`TypeModule`].
+/// the system loads the implementation (see [`TypePlugin`] and [`TypeModule`]).
 /// Therefore, whereas an object subclass can be registered only once as a
 /// static type, it can be registered several times as a dynamic type.
 ///
@@ -1042,10 +1006,10 @@ pub fn object_subclass(_attr: TokenStream, item: TokenStream) -> TokenStream {
 /// This adds implementations for the `get_type()` method, which should probably never be defined
 /// differently.
 ///
-/// It provides default values for the `Prerequisites` type parameter. If this present, the macro
+/// It provides default values for the `Prerequisites` type parameter. If this is present, the macro
 /// will use the provided value instead of the default.
 ///
-/// `Prerequisites` is interfaces for types that require a specific base class or interfaces.
+/// `Prerequisites` are interfaces for types that require a specific base class or interfaces.
 ///
 /// ```ignore
 /// type Prerequisites = ();
@@ -1063,7 +1027,7 @@ pub fn object_subclass(_attr: TokenStream, item: TokenStream) -> TokenStream {
 /// ```
 ///
 /// As a dynamic type, an object interface must be explicitly registered when
-/// the system loads the implementation (see [`TypePlugin`] and [`TypeModule`].
+/// the system loads the implementation (see [`TypePlugin`] and [`TypeModule`]).
 /// Therefore, whereas an object interface can be registered only once as a
 /// static type, it can be registered several times as a dynamic type.
 ///
@@ -1603,4 +1567,23 @@ pub fn derived_properties(_attr: TokenStream, item: TokenStream) -> TokenStream 
 pub fn derive_value_delegate(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as value_delegate_derive::ValueDelegateInput);
     value_delegate_derive::impl_value_delegate(input).unwrap()
+}
+
+/// An attribute macro for writing asynchronous test functions.
+///
+/// This macro is designed to wrap an asynchronous test function and ensure that
+/// it runs within a `glib::MainContext`. It helps in writing async tests that
+/// require the use of an event loop for the asynchronous execution.
+///
+/// # Example
+///
+/// ```
+/// #[glib::async_test]
+/// async fn my_async_test() {
+///     // Test code that runs asynchronously
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn async_test(args: TokenStream, item: TokenStream) -> TokenStream {
+    async_test::async_test(args, item)
 }

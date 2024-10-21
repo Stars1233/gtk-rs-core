@@ -8,7 +8,7 @@ use crate::{
     ffi, AsyncInitable, AsyncResult, Cancellable, CancellableFuture, GioFutureResult, LocalTask,
 };
 
-pub trait AsyncInitableImpl: ObjectImpl {
+pub trait AsyncInitableImpl: ObjectImpl + ObjectSubclass<Type: IsA<AsyncInitable>> {
     fn init_future(
         &self,
         io_priority: glib::Priority,
@@ -17,12 +17,7 @@ pub trait AsyncInitableImpl: ObjectImpl {
     }
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::AsyncInitableImplExt> Sealed for T {}
-}
-
-pub trait AsyncInitableImplExt: sealed::Sealed + AsyncInitableImpl + ObjectSubclass {
+pub trait AsyncInitableImplExt: AsyncInitableImpl {
     fn parent_init_future(
         &self,
         io_priority: glib::Priority,
@@ -36,13 +31,13 @@ pub trait AsyncInitableImplExt: sealed::Sealed + AsyncInitableImpl + ObjectSubcl
                 .init_async
                 .expect("no parent \"init_async\" implementation");
 
-            unsafe extern "C" fn parent_init_future_callback<T>(
+            unsafe extern "C" fn parent_init_future_callback<
+                T: ObjectSubclass<Type: IsA<glib::Object>>,
+            >(
                 source_object: *mut glib::gobject_ffi::GObject,
                 res: *mut crate::ffi::GAsyncResult,
                 user_data: glib::ffi::gpointer,
-            ) where
-                T: AsyncInitableImpl,
-            {
+            ) {
                 let type_data = T::type_data();
                 let parent_iface = type_data.as_ref().parent_interface::<AsyncInitable>()
                     as *const ffi::GAsyncInitableIface;

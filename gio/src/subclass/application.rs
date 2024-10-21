@@ -64,7 +64,7 @@ impl From<ArgumentList> for Vec<OsString> {
     }
 }
 
-pub trait ApplicationImpl: ObjectImpl + ApplicationImplExt {
+pub trait ApplicationImpl: ObjectImpl + ObjectSubclass<Type: IsA<Application>> {
     fn activate(&self) {
         self.parent_activate()
     }
@@ -110,12 +110,7 @@ pub trait ApplicationImpl: ObjectImpl + ApplicationImplExt {
     }
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::ApplicationImplExt> Sealed for T {}
-}
-
-pub trait ApplicationImplExt: sealed::Sealed + ObjectSubclass {
+pub trait ApplicationImplExt: ApplicationImpl {
     fn parent_activate(&self) {
         unsafe {
             let data = Self::type_data();

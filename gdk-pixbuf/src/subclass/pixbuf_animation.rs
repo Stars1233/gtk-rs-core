@@ -13,7 +13,7 @@ use glib::{prelude::*, subclass::prelude::*, translate::*};
 
 use crate::{ffi, Pixbuf, PixbufAnimation, PixbufAnimationIter};
 
-pub trait PixbufAnimationImpl: ObjectImpl {
+pub trait PixbufAnimationImpl: ObjectImpl + ObjectSubclass<Type: IsA<PixbufAnimation>> {
     fn is_static_image(&self) -> bool {
         self.parent_is_static_image()
     }
@@ -31,12 +31,7 @@ pub trait PixbufAnimationImpl: ObjectImpl {
     }
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::PixbufAnimationImplExt> Sealed for T {}
-}
-
-pub trait PixbufAnimationImplExt: sealed::Sealed + ObjectSubclass {
+pub trait PixbufAnimationImplExt: PixbufAnimationImpl {
     fn parent_is_static_image(&self) -> bool {
         unsafe {
             let data = Self::type_data();

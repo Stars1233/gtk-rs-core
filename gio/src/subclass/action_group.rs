@@ -6,7 +6,7 @@ use glib::{prelude::*, subclass::prelude::*, translate::*, GString, Quark, Varia
 
 use crate::{ffi, ActionGroup};
 
-pub trait ActionGroupImpl: ObjectImpl {
+pub trait ActionGroupImpl: ObjectImpl + ObjectSubclass<Type: IsA<ActionGroup>> {
     fn action_added(&self, action_name: &str) {
         self.parent_action_added(action_name);
     }
@@ -73,12 +73,7 @@ pub trait ActionGroupImpl: ObjectImpl {
     )>;
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::ActionGroupImplExt> Sealed for T {}
-}
-
-pub trait ActionGroupImplExt: sealed::Sealed + ObjectSubclass {
+pub trait ActionGroupImplExt: ActionGroupImpl {
     fn parent_action_added(&self, action_name: &str) {
         unsafe {
             let type_data = Self::type_data();

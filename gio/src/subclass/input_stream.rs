@@ -6,7 +6,7 @@ use glib::{prelude::*, subclass::prelude::*, translate::*, Error};
 
 use crate::{ffi, Cancellable, InputStream};
 
-pub trait InputStreamImpl: ObjectImpl + InputStreamImplExt + Send {
+pub trait InputStreamImpl: Send + ObjectImpl + ObjectSubclass<Type: IsA<InputStream>> {
     fn read(&self, buffer: &mut [u8], cancellable: Option<&Cancellable>) -> Result<usize, Error> {
         self.parent_read(buffer, cancellable)
     }
@@ -20,12 +20,7 @@ pub trait InputStreamImpl: ObjectImpl + InputStreamImplExt + Send {
     }
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::InputStreamImplExt> Sealed for T {}
-}
-
-pub trait InputStreamImplExt: sealed::Sealed + ObjectSubclass {
+pub trait InputStreamImplExt: InputStreamImpl {
     fn parent_read(
         &self,
         buffer: &mut [u8],
@@ -299,7 +294,8 @@ mod tests {
 
     glib::wrapper! {
         pub struct SimpleInputStream(ObjectSubclass<imp::SimpleInputStream>)
-            @extends InputStream;
+            @extends InputStream,
+            @implements crate::Seekable;
     }
 
     #[test]

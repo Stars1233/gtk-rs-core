@@ -12,7 +12,9 @@ use glib::{prelude::*, subclass::prelude::*, translate::*};
 
 use crate::{ffi, Pixbuf, PixbufAnimationIter};
 
-pub trait PixbufAnimationIterImpl: ObjectImpl {
+pub trait PixbufAnimationIterImpl:
+    ObjectImpl + ObjectSubclass<Type: IsA<PixbufAnimationIter>>
+{
     // rustdoc-stripper-ignore-next
     /// Time in milliseconds, returning `None` implies showing the same pixbuf forever.
     fn delay_time(&self) -> Option<Duration> {
@@ -32,12 +34,7 @@ pub trait PixbufAnimationIterImpl: ObjectImpl {
     }
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::PixbufAnimationIterImplExt> Sealed for T {}
-}
-
-pub trait PixbufAnimationIterImplExt: sealed::Sealed + ObjectSubclass {
+pub trait PixbufAnimationIterImplExt: PixbufAnimationIterImpl {
     fn parent_delay_time(&self) -> Option<Duration> {
         unsafe {
             let data = Self::type_data();

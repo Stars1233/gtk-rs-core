@@ -18,12 +18,12 @@ jobs:
           - stable
           - beta
           - nightly
-          - "1.70.0"
+          - "1.80.0"
         conf:
           - { name: "cairo", features: "png,pdf,svg,ps,use_glib,v1_18,freetype,script,xcb,xlib,win32-surface", nightly: "--features 'png,pdf,svg,ps,use_glib,v1_18,freetype,script,xcb,xlib,win32-surface'", test_sys: true }
           - { name: "gdk-pixbuf", features: "v2_42", nightly: "--all-features", test_sys: true }
-          - { name: "gio", features: "v2_80", nightly: "--all-features", test_sys: true }
-          - { name: "glib", features: "v2_80", nightly: "--all-features", test_sys: true }
+          - { name: "gio", features: "v2_84", nightly: "--all-features", test_sys: true }
+          - { name: "glib", features: "v2_84,log", nightly: "--all-features", test_sys: true }
           - { name: "graphene", features: "", nightly: "", test_sys: true }
           - { name: "pango", features: "v1_54", nightly: "--all-features", test_sys: true }
           - { name: "pangocairo", features: "", nightly: "--all-features", test_sys: true }
@@ -91,7 +91,7 @@ jobs:
         if: matrix.conf.test_sys && matrix.conf.name == 'glib'
       # GLib compile tests only on stable
       - name: Compile tests
-        run: cargo test --manifest-path glib/Cargo.toml --features "compiletests,v2_78"
+        run: cargo test --manifest-path glib/Cargo.toml --features "compiletests,v2_84"
         if: matrix.rust == 'stable'
 
   build-others:
@@ -104,7 +104,7 @@ jobs:
           - stable
           - beta
           - nightly
-          - "1.70.0"
+          - "1.80.0"
     steps:
       - uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
@@ -146,7 +146,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: EmbarkStudios/cargo-deny-action@v1
+    - uses: EmbarkStudios/cargo-deny-action@v2
 
   generator:
     name: regen check

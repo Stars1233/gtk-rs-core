@@ -128,12 +128,7 @@ impl ApplicationBuilder {
     }
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::IsA<super::Application>> Sealed for T {}
-}
-
-pub trait ApplicationExt: IsA<Application> + sealed::Sealed + 'static {
+pub trait ApplicationExt: IsA<Application> + 'static {
     #[doc(alias = "g_application_activate")]
     fn activate(&self) {
         unsafe {
@@ -480,7 +475,7 @@ pub trait ApplicationExt: IsA<Application> + sealed::Sealed + 'static {
             this: *mut ffi::GApplication,
             command_line: *mut ffi::GApplicationCommandLine,
             f: glib::ffi::gpointer,
-        ) -> libc::c_int {
+        ) -> std::ffi::c_int {
             let f: &F = &*(f as *const F);
             f(
                 Application::from_glib_borrow(this).unsafe_cast_ref(),
@@ -512,7 +507,7 @@ pub trait ApplicationExt: IsA<Application> + sealed::Sealed + 'static {
             this: *mut ffi::GApplication,
             options: *mut glib::ffi::GVariantDict,
             f: glib::ffi::gpointer,
-        ) -> libc::c_int {
+        ) -> std::ffi::c_int {
             let f: &F = &*(f as *const F);
             f(
                 Application::from_glib_borrow(this).unsafe_cast_ref(),

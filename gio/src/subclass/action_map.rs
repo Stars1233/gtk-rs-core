@@ -6,18 +6,13 @@ use glib::{prelude::*, subclass::prelude::*, translate::*, GString, Quark};
 
 use crate::{ffi, Action, ActionMap};
 
-pub trait ActionMapImpl: ObjectImpl {
+pub trait ActionMapImpl: ObjectImpl + ObjectSubclass<Type: IsA<ActionMap>> {
     fn lookup_action(&self, action_name: &str) -> Option<Action>;
     fn add_action(&self, action: &Action);
     fn remove_action(&self, action_name: &str);
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::ActionMapImplExt> Sealed for T {}
-}
-
-pub trait ActionMapImplExt: sealed::Sealed + ObjectSubclass {
+pub trait ActionMapImplExt: ActionMapImpl {
     fn parent_lookup_action(&self, name: &str) -> Option<Action> {
         unsafe {
             let type_data = Self::type_data();
@@ -70,10 +65,7 @@ pub trait ActionMapImplExt: sealed::Sealed + ObjectSubclass {
 
 impl<T: ActionMapImpl> ActionMapImplExt for T {}
 
-unsafe impl<T: ActionMapImpl> IsImplementable<T> for ActionMap
-where
-    <T as ObjectSubclass>::Type: IsA<glib::Object>,
-{
+unsafe impl<T: ActionMapImpl> IsImplementable<T> for ActionMap {
     fn interface_init(iface: &mut glib::Interface<Self>) {
         let iface = iface.as_mut();
 

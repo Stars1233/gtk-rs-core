@@ -6,7 +6,7 @@ use glib::{prelude::*, subclass::prelude::*, translate::*, Error};
 
 use crate::{ffi, Cancellable, IOStream, InputStream, OutputStream};
 
-pub trait IOStreamImpl: ObjectImpl + IOStreamImplExt + Send {
+pub trait IOStreamImpl: Send + ObjectImpl + ObjectSubclass<Type: IsA<IOStream>> {
     fn input_stream(&self) -> InputStream {
         self.parent_input_stream()
     }
@@ -20,12 +20,7 @@ pub trait IOStreamImpl: ObjectImpl + IOStreamImplExt + Send {
     }
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::IOStreamImplExt> Sealed for T {}
-}
-
-pub trait IOStreamImplExt: sealed::Sealed + ObjectSubclass {
+pub trait IOStreamImplExt: IOStreamImpl {
     fn parent_input_stream(&self) -> InputStream {
         unsafe {
             let data = Self::type_data();

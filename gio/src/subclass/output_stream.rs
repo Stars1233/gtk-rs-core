@@ -6,7 +6,7 @@ use glib::{prelude::*, subclass::prelude::*, translate::*, Error};
 
 use crate::{ffi, Cancellable, InputStream, OutputStream, OutputStreamSpliceFlags};
 
-pub trait OutputStreamImpl: ObjectImpl + OutputStreamImplExt + Send {
+pub trait OutputStreamImpl: Send + ObjectImpl + ObjectSubclass<Type: IsA<OutputStream>> {
     fn write(&self, buffer: &[u8], cancellable: Option<&Cancellable>) -> Result<usize, Error> {
         self.parent_write(buffer, cancellable)
     }
@@ -29,12 +29,7 @@ pub trait OutputStreamImpl: ObjectImpl + OutputStreamImplExt + Send {
     }
 }
 
-mod sealed {
-    pub trait Sealed {}
-    impl<T: super::OutputStreamImplExt> Sealed for T {}
-}
-
-pub trait OutputStreamImplExt: sealed::Sealed + ObjectSubclass {
+pub trait OutputStreamImplExt: OutputStreamImpl {
     fn parent_write(
         &self,
         buffer: &[u8],
